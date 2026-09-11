@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>NEXUS // 访问控制</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+</head>
+<body>
+  <!-- 背景层 -->
+  <canvas id="matrix" aria-hidden="true"></canvas>
+  <div class="grid-overlay" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+  <div class="glow glow-a" aria-hidden="true"></div>
+  <div class="glow glow-b" aria-hidden="true"></div>
+
+  <main class="stage">
+    <section class="panel" id="panel">
+      <div class="panel__corner tl"></div>
+      <div class="panel__corner tr"></div>
+      <div class="panel__corner bl"></div>
+      <div class="panel__corner br"></div>
+
+      <header class="brand">
+        <div class="brand__logo">
+          <svg viewBox="0 0 48 48" width="42" height="42" aria-hidden="true">
+            <defs>
+              <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#00e5ff"/>
+                <stop offset="100%" stop-color="#7c4dff"/>
+              </linearGradient>
+            </defs>
+            <path d="M24 3 42 13v22L24 45 6 35V13z" fill="none" stroke="url(#lg)" stroke-width="2"/>
+            <path d="M24 14v20M14 24h20" stroke="url(#lg)" stroke-width="2" opacity=".9"/>
+            <circle cx="24" cy="24" r="6" fill="none" stroke="#00e5ff" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="brand__text">
+          <h1>NEXUS<span>.SYS</span></h1>
+          <p class="brand__sub">// 生物特征访问终端 v3.1</p>
+        </div>
+        <div class="brand__status" id="status">
+          <span class="dot"></span><span class="status-text">待机</span>
+        </div>
+      </header>
+
+      <!-- 标签切换 -->
+      <nav class="tabs" role="tablist">
+        <button class="tab is-active" data-tab="login" role="tab" aria-selected="true">身份验证</button>
+        <button class="tab" data-tab="register" role="tab" aria-selected="false">新建档案</button>
+        <span class="tabs__glider" id="glider"></span>
+      </nav>
+
+      <!-- 登录表单 -->
+      <form class="form is-active" id="login-form" data-view="login" novalidate>
+        <label class="field">
+          <span class="field__label">用户名 / 邮箱</span>
+          <span class="field__box">
+            <svg class="field__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.7-8 6v2h16v-2c0-3.3-3.6-6-8-6Z"/></svg>
+            <input id="login-username" name="username" type="text" autocomplete="username" placeholder="输入身份标识" required />
+            <i class="field__beam"></i>
+          </span>
+        </label>
+
+        <label class="field">
+          <span class="field__label">访问密钥</span>
+          <span class="field__box">
+            <svg class="field__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm-3 8V6a3 3 0 1 1 6 0v3H9Z"/></svg>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="输入加密密钥" required />
+            <button type="button" class="peek" data-target="login-password" aria-label="显示密码">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7Zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/></svg>
+            </button>
+            <i class="field__beam"></i>
+          </span>
+        </label>
+
+        <div class="strength" id="login-strength" hidden></div>
+
+        <button class="btn" type="submit">
+          <span class="btn__txt">建立连接</span>
+          <span class="btn__scan"></span>
+        </button>
+
+        <p class="hint">提示：支持使用注册邮箱登录</p>
+      </form>
+
+      <!-- 注册表单 -->
+      <form class="form" id="register-form" data-view="register" novalidate>
+        <label class="field">
+          <span class="field__label">用户名</span>
+          <span class="field__box">
+            <svg class="field__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.7-8 6v2h16v-2c0-3.3-3.6-6-8-6Z"/></svg>
+            <input id="reg-username" name="username" type="text" autocomplete="username" placeholder="3-32 位字母/数字/下划线/中文" required />
+            <i class="field__beam"></i>
+          </span>
+          <em class="field__tip" data-tip-for="reg-username"></em>
+        </label>
+
+        <label class="field">
+          <span class="field__label">电子邮箱</span>
+          <span class="field__box">
+            <svg class="field__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm9 8L4 7v11h16V7l-8 6Z"/></svg>
+            <input id="reg-email" name="email" type="email" autocomplete="email" placeholder="name@domain.com" required />
+            <i class="field__beam"></i>
+          </span>
+          <em class="field__tip" data-tip-for="reg-email"></em>
+        </label>
+
+        <label class="field">
+          <span class="field__label">设置密钥</span>
+          <span class="field__box">
+            <svg class="field__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5Zm-3 8V6a3 3 0 1 1 6 0v3H9Z"/></svg>
+            <input id="reg-password" name="password" type="password" autocomplete="new-password" placeholder="至少 8 位字符" required />
+            <button type="button" class="peek" data-target="reg-password" aria-label="显示密码">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7Zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/></svg>
+            </button>
+            <i class="field__beam"></i>
+          </span>
+          <em class="field__tip" data-tip-for="reg-password"></em>
+        </label>
+
+        <div class="strength" id="strength">
+          <div class="strength__bars"><i></i><i></i><i></i><i></i></div>
+          <span class="strength__text">密钥强度：—</span>
+        </div>
+
+        <label class="field">
+          <span class="field__label">确认密钥</span>
+          <span class="field__box">
+            <svg class="field__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2Z"/></svg>
+            <input id="reg-password2" name="password2" type="password" autocomplete="new-password" placeholder="再次输入密钥" required />
+            <i class="field__beam"></i>
+          </span>
+          <em class="field__tip" data-tip-for="reg-password2"></em>
+        </label>
+
+        <button class="btn" type="submit">
+          <span class="btn__txt">生成档案</span>
+          <span class="btn__scan"></span>
+        </button>
+        <p class="hint">注册即代表你同意《神经连接协议》</p>
+      </form>
+
+      <!-- 消息条 -->
+      <div class="alert" id="alert" role="alert" aria-live="polite"></div>
+    </section>
+
+    <footer class="foot">
+      <span class="foot__item"><b id="clock">--:--:--</b> 本地时间</span>
+      <span class="foot__sep">/</span>
+      <span class="foot__item">链路 <b id="latency">--ms</b></span>
+      <span class="foot__sep">/</span>
+      <span class="foot__item">数据库 <b id="dbState" class="warn">检测中</b></span>
+    </footer>
+  </main>
+
+  <!-- 成功遮罩 -->
+  <div class="welcome" id="welcome" hidden>
+    <div class="welcome__ring"></div>
+    <div class="welcome__card">
+      <div class="welcome__check">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2Z"/></svg>
+      </div>
+      <h2 id="welcome-title">访问已授权</h2>
+      <p id="welcome-sub">欢迎回来，特工。</p>
+      <div class="welcome__meta" id="welcome-meta"></div>
+      <button class="btn btn--ghost" id="logout">断开连接</button>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+node_modules/
+.env
+.sudo_pass
+*.log
+.DS_Store

@@ -76,6 +76,21 @@ sudo 密码来源（按优先级）：
 PROXY_PORT=7890 ./scripts/fix-proxy.sh
 ```
 
+### 开机自动加载
+
+`~/.wsl-proxy.sh`（由 `~/.bashrc` 引用）会在每次打开终端时自动检测并修复代理，
+同时导出 `http_proxy` / `https_proxy` 等环境变量。手动重跑：
+
+```bash
+source ~/.wsl-proxy.sh
+```
+
+静默模式（不打印提示）：
+
+```bash
+WSL_PROXY_QUIET=1 source ~/.wsl-proxy.sh
+```
+
 ## 手动安装步骤
 
 ### 1. 安装 MySQL（Ubuntu/WSL）

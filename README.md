@@ -53,6 +53,29 @@ sudo 密码来源（按优先级）：
    echo -n '你的密码' > .sudo_pass && chmod 600 .sudo_pass
    ```
 
+## WSL 网络代理修复
+
+如果 WSL 内无法访问 GitHub（宿主机 IP 在重启后会变化），运行：
+
+```bash
+./scripts/fix-proxy.sh          # 自动检测并修复 git/ssh 代理
+./scripts/fix-proxy.sh check    # 仅检测当前连通性
+```
+
+脚本会自动完成：
+
+1. 检测宿主机 IP（默认路由网关）
+2. 探测可用代理端口（自动验证 HTTP CONNECT）
+3. 更新 git 仅对 GitHub 的代理配置
+4. 生成 `~/.ssh/config`，让 SSH 走 `ssh.github.com:443` + 代理
+5. 验证 HTTPS 与 SSH 连通性
+
+若代理端口不常见，可指定：
+
+```bash
+PROXY_PORT=7890 ./scripts/fix-proxy.sh
+```
+
 ## 手动安装步骤
 
 ### 1. 安装 MySQL（Ubuntu/WSL）
